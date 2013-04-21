@@ -264,6 +264,11 @@ module Formotion
               row.value = saved_row_value
             end
           end
+          if section.key
+            section_value = saved_render[section.key]
+            selected_row = section.rows.find {|row| row.key.to_s == section_value}
+            selected_row.value = true if selected_row
+          end
         end
       }
       rendered_data = load_state
