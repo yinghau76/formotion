@@ -98,4 +98,43 @@ describe "Form Persisting" do
     f.reset
     r.value.should == "Nici"
   end
+
+  it "can restore the value of keyed section" do
+      key = "test_#{rand(255)}"
+      App::Persistence["FORMOTION_#{key}"] = nil
+      App::Persistence["FORMOTION_#{key}_ORIGINAL"] = nil
+      hash = {
+        persist_as: key,
+        sections: [
+          key: :gender,
+          select_one: true,
+          rows: [ {
+              title: 'Male',
+              key: :male,
+              type: :check
+            }, {
+              title: 'Female',
+              key: :female,
+              type: :check
+            }, {
+              title: 'Unsaid',
+              key: :unsaid,
+              type: :check
+            }
+          ]
+        ]
+      }
+      # select 'Female'
+      f = Formotion::Form.persist(hash)
+      f.sections[0].rows[1].value = true
+
+      saved = f.send(:load_state)
+      # the saved value should be 'Female'
+      saved[:gender].should == 'female'
+
+      # Create another form with saved data
+      another = Formotion::Form.persist(hash)
+      # 'Female' should be selected
+      another.sections[0].rows[1].value.should == true
+    end
 end
